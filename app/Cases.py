@@ -6,58 +6,59 @@ import json
 
 class Cases(Resource):
 
+    def __init__(self):
+      self.case = {}
+      self.hours = 0
+
     def get(self):
-        """Returns all cases with number of hours"""
-        return {'case': 'test'}
+        pass
 
     def post(self):
         """Takes in JSON and outputs all cases with number of hours"""
         json_data = request.get_json(force=True)
 
-        case = {}
-        hours = 0
         for item in json_data:
-            if not case.get(item['case_id']):
-                case[item['case_id']] = {}
-                case[item['case_id']]['time_tracker'] = []
+            if not self.case.get(item['case_id']):
+                self.case[item['case_id']] = {}
+                self.case[item['case_id']]['time_tracker'] = []
             if 'state' in item:
                 if item['state']['to'] == 'open':
-                    case[item['case_id']]['state'] = 'open'
-                    if 'team' in case[item['case_id']]:
-                        if case[item['case_id']]['team'] == 'Runtime':
-                            case[item['case_id']]['time_tracker'].append(
+                    self.case[item['case_id']]['state'] = 'open'
+                    if 'team' in self.case[item['case_id']]:
+                        if self.case[item['case_id']]['team'] == 'Runtime':
+                            self.case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
-                            print case[item['case_id']]['time_tracker']
+                            print self.case[item['case_id']]['time_tracker']
 
                 if item['state']['from'] == 'open' or item['state']['to'] == 'open':
-                    if 'team' in case[item['case_id']]:
-                        if case[item['case_id']]['team'] == 'Runtime':
-                            case[item['case_id']]['time_tracker'].append(
+                    if 'team' in self.case[item['case_id']]:
+                        if self.case[item['case_id']]['team'] == 'Runtime':
+                            self.case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
                         if item['state']['to'] == 'closed':
-                            case[item['case_id']]['time_tracker'].append(
+                            self.case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
-                            print case[item['case_id']]['time_tracker']
+                            print self.case[item['case_id']]['time_tracker']
                             # print case[item['case_id']]['time_tracker']
                         # print case[item['case_id']]['team']
             if 'assignee' in item:
-                if item['team'] == 'Runtime' and case[item['case_id']]['state'] == 'open':
-                    case[item['case_id']]['team'] = 'Runtime'
-                    case[item['case_id']]['time_tracker'].append(
+                if item['team'] == 'Runtime' and self.case[item['case_id']]['state'] == 'open':
+                    self.case[item['case_id']]['team'] = 'Runtime'
+                    self.case[item['case_id']]['time_tracker'].append(
                         parser.parse(item['timestamp']))
-                    print case[item['case_id']]['time_tracker']
+                    print self.case[item['case_id']]['time_tracker']
 
-            if len(case[item['case_id']]['time_tracker']) == 2:
+            if len(self.case[item['case_id']]['time_tracker']) == 2:
 
-                hours = hours + \
+                self.hours = self.hours + \
                     self.calculate(
-                        case[item['case_id']]['time_tracker'][0], case[item['case_id']]['time_tracker'][1])
-                case[item['case_id']]['time_tracker'].pop(0)
-                case[item['case_id']]['time_tracker'].pop(0)
-                case[item['case_id']]['hours'] = hours
+                        self.case[item['case_id']]['time_tracker'][0], self.case[item['case_id']]['time_tracker'][1])
+                self.case[item['case_id']]['time_tracker'].pop(0)
+                self.case[item['case_id']]['time_tracker'].pop(0)
+                self.case[item['case_id']]['hours'] = self.hours
             # print case
 
-        return json.dumps(case)
+        return json.dumps(self.case)
 
     def calculate(self, start, end):
         """Calculates the time in hours between start and end time"""
