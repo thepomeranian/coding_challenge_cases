@@ -28,15 +28,16 @@ class Cases(Resource):
                         if case[item['case_id']]['team'] == 'Runtime':
                             case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
-                            # if item['state']['to'] == 'closed' and len(case[item['case_id']]['time_tracker']) is 1:
-                            #   hours = hours + case[item['case_id']]['time_tracker'][0].hour
-                            print case[item['case_id']]['time_tracker']
+                            if item['state']['to'] == 'closed' and len(case[item['case_id']]['time_tracker']) is 1:
+                              print "invalid"
+                            # print case[item['case_id']]['time_tracker']
+                        # print case[item['case_id']]['team']
             if 'assignee' in item:
                 if item['team'] == 'Runtime' and case[item['case_id']]['state'] == 'open':
                     case[item['case_id']]['team'] = 'Runtime'
                     case[item['case_id']]['time_tracker'].append(
                         parser.parse(item['timestamp']))
-                    # print "goes here"
+                    print "goes here"
                     print case[item['case_id']]['time_tracker']
             if len(case[item['case_id']]['time_tracker']) is 2:
                 hours = hours + \
@@ -67,4 +68,6 @@ class Cases(Resource):
       * if i end up writing methods for checking state and assignee i can test those as well
       * i could try my hand at flask testing and test the get and post endpoints
     * write a banging readme
+    * rewrite handling case states, check for runtime, and appending to timetracker. the issues seem to stem from there. hour calculation is currently off as well
+    * might want to think about breaking this down into methods once the math checks out
     """
