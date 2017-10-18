@@ -30,6 +30,12 @@ class Cases(Resource):
                     self.set_state(item['case_id'], 'open')
                     if self.is_Runtime(item['case_id']):
                         self.add_timestamp(item['case_id'], item['timestamp'])
+                if item['state']['from'] == 'open':
+                    print 'from open'
+                    if self.is_Runtime(item['case_id']):
+                        print 'is runtime from open'
+                        print item['timestamp']
+                        self.add_timestamp(item['case_id'], item['timestamp'])
 
             if 'team' in item:
                 self.set_team(item['case_id'], item['team'])
@@ -41,12 +47,13 @@ class Cases(Resource):
 
     def add_timestamp(self, case_id, timestamp):
         if self.is_Runtime(case_id):
-            if self.is_open(case_id):
+                print 'adding ' + timestamp
                 self.case[case_id]['time_tracker'].append(
                     parser.parse(timestamp))
                 self.check_time_tracker(case_id)
 
     def check_time_tracker(self, case_id):
+        print self.case[case_id]['time_tracker']
         if len(self.case[case_id]['time_tracker']) == 2:
             self.hours = self.hours + \
                 self.calculate(self.case[case_id]['time_tracker'][
