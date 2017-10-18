@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_restful import Resource
 from datetime import datetime
 from dateutil import parser
-
+import json
 
 class Cases(Resource):
 
@@ -13,7 +13,7 @@ class Cases(Resource):
     def post(self):
         """Takes in JSON and outputs all cases with number of hours"""
         json_data = request.get_json(force=True)
-        # time_tracker = []
+
         case = {}
         hours = 0
         for item in json_data:
@@ -23,13 +23,21 @@ class Cases(Resource):
             if 'state' in item:
                 if item['state']['to'] == 'open':
                     case[item['case_id']]['state'] = 'open'
+                    if 'team' in case[item['case_id']]:
+                        if case[item['case_id']]['team'] == 'Runtime':
+                            case[item['case_id']]['time_tracker'].append(
+                                parser.parse(item['timestamp']))
+                            print case[item['case_id']]['time_tracker']
+
                 if item['state']['from'] == 'open' or item['state']['to'] == 'open':
                     if 'team' in case[item['case_id']]:
                         if case[item['case_id']]['team'] == 'Runtime':
                             case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
-                            if item['state']['to'] == 'closed' and len(case[item['case_id']]['time_tracker']) is 1:
-                              print "invalid"
+                        if item['state']['to'] == 'closed':
+                            case[item['case_id']]['time_tracker'].append(
+                                parser.parse(item['timestamp']))
+                            print case[item['case_id']]['time_tracker']
                             # print case[item['case_id']]['time_tracker']
                         # print case[item['case_id']]['team']
             if 'assignee' in item:
@@ -37,9 +45,10 @@ class Cases(Resource):
                     case[item['case_id']]['team'] = 'Runtime'
                     case[item['case_id']]['time_tracker'].append(
                         parser.parse(item['timestamp']))
-                    print "goes here"
                     print case[item['case_id']]['time_tracker']
-            if len(case[item['case_id']]['time_tracker']) is 2:
+
+            if len(case[item['case_id']]['time_tracker']) == 2:
+
                 hours = hours + \
                     self.calculate(
                         case[item['case_id']]['time_tracker'][0], case[item['case_id']]['time_tracker'][1])
@@ -48,7 +57,7 @@ class Cases(Resource):
                 case[item['case_id']]['hours'] = hours
             # print case
 
-        return case
+        return json.dumps(case)
 
     def calculate(self, start, end):
         """Calculates the time in hours between start and end time"""
