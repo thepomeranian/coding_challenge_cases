@@ -16,7 +16,6 @@ class Cases(Resource):
         # time_tracker = []
         case = {}
         hours = 0
-
         for item in json_data:
             if not case.get(item['case_id']):
                 case[item['case_id']] = {}
@@ -29,11 +28,16 @@ class Cases(Resource):
                         if case[item['case_id']]['team'] == 'Runtime':
                             case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
+                            # if item['state']['to'] == 'closed' and len(case[item['case_id']]['time_tracker']) is 1:
+                            #   hours = hours + case[item['case_id']]['time_tracker'][0].hour
+                            print case[item['case_id']]['time_tracker']
             if 'assignee' in item:
                 if item['team'] == 'Runtime' and case[item['case_id']]['state'] == 'open':
                     case[item['case_id']]['team'] = 'Runtime'
                     case[item['case_id']]['time_tracker'].append(
                         parser.parse(item['timestamp']))
+                    # print "goes here"
+                    print case[item['case_id']]['time_tracker']
             if len(case[item['case_id']]['time_tracker']) is 2:
                 hours = hours + \
                     self.calculate(
@@ -41,6 +45,7 @@ class Cases(Resource):
                 case[item['case_id']]['time_tracker'].pop(0)
                 case[item['case_id']]['time_tracker'].pop(0)
                 case[item['case_id']]['hours'] = hours
+            # print case
 
         return case
 
