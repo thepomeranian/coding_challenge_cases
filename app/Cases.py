@@ -31,17 +31,17 @@ class Cases(Resource):
                     if self.is_Runtime(item['case_id']):
                         self.add_timestamp(item['case_id'], item['timestamp'])
                 if item['state']['from'] == 'open':
-                    print 'from open'
                     if self.is_Runtime(item['case_id']):
-                        print 'is runtime from open'
-                        print item['timestamp']
                         self.add_timestamp(item['case_id'], item['timestamp'])
 
             if 'team' in item:
                 self.set_team(item['case_id'], item['team'])
-                if self.is_Runtime(item['case_id']):
-                    if self.is_open(item['case_id']):
+                if self.is_open(item['case_id']):
+                    if self.previous(item['case_id']):
                         self.add_timestamp(item['case_id'], item['timestamp'])
+                    if self.is_Runtime(item['case_id']):
+                        self.add_timestamp(item['case_id'], item['timestamp'])
+
 
         return json.dumps(self.case)
 
@@ -83,6 +83,8 @@ class Cases(Resource):
             return True
 
     def set_team(self, case_id, team=None):
+        if 'team' in self.case[case_id]:
+            self.case[case_id]['previous_team'] = self.case[case_id]['team']
         self.case[case_id]['team'] = team
         print 'team set to ' + self.case[case_id]['team']
 
@@ -92,6 +94,12 @@ class Cases(Resource):
                 return True
         else:
             return False
+
+    def previous(self, case_id):
+        if 'previous_team' in self.case[case_id]:
+            if self.case[case_id]['previous_team'] == 'Runtime':
+                return True
+        return False
 
     """
     Notes:
