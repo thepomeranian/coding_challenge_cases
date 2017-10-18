@@ -44,11 +44,7 @@ class Cases(Resource):
                     if self.is_Runtime(item['case_id']):
                         self.add_timestamp(item['case_id'], item['timestamp'])
 
-        # return json.dumps("case_id": self.case['case_id'],"hours":
-        # self.hours)
-        # return [{"case_id": case ,"hours": case['hours']} for case in self.case]
-          return self.case
-
+        return [{"case_id": case, "hours": self.case[case]['hours']} for case in self.case]
 
     def add_timestamp(self, case_id, timestamp):
         if self.is_Runtime(case_id) or self.previous(case_id):
@@ -60,14 +56,14 @@ class Cases(Resource):
     def check_time_tracker(self, case_id):
         print self.case[case_id]['time_tracker']
         if len(self.case[case_id]['time_tracker']) == 2:
-            self.hours = self.hours + \
+            self.case[case_id]['hours'] = self.case[case_id]['hours'] + \
                 self.calculate(self.case[case_id]['time_tracker'][
                                0], self.case[case_id]['time_tracker'][1])
             self.case[case_id]['time_tracker'].pop(0)
             self.case[case_id]['time_tracker'].pop(0)
             print 'time_tracker is now ' + str(len(self.case[case_id]['time_tracker']))
-            print 'hours is now ' + str(self.hours)
-            self.case[case_id]['hours'] = self.hours
+            print 'hours is now ' + str(self.case[case_id]['hours']) + ' ' + str(case_id)
+            self.case[case_id]['hours'] = self.case[case_id]['hours']
 
     def calculate(self, start, end):
         """Calculates the time in hours between start and end time"""
@@ -79,6 +75,7 @@ class Cases(Resource):
         if not self.case.get(case_id):
             self.case[case_id] = {}
             self.case[case_id]['time_tracker'] = []
+            self.case[case_id]['hours'] = 0
 
     def set_state(self, case_id, state='open'):
         self.case[case_id]['state'] = state
