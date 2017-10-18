@@ -1,53 +1,54 @@
 from flask import Flask, request, jsonify
 from flask_restful import Resource
-
+from datetime import datetime
+from dateutil import parser
 
 
 class Cases(Resource):
 
     def get(self):
-      """Returns all cases with number of hours"""
-      return {'case': 'test'}
+        """Returns all cases with number of hours"""
+        return {'case': 'test'}
 
     def post(self):
-      """Takes in JSON and outputs all cases with number of hours"""
-      json_data = request.get_json(force=True)
-      time_tracker = []
-      case = {}
+        """Takes in JSON and outputs all cases with number of hours"""
+        json_data = request.get_json(force=True)
+        # time_tracker = []
+        case = {}
+        hours = 0
 
-      for item in json_data:
-        if not case.get(item['case_id']):
-          case[item['case_id']] = {}
-        if 'state' in item:
-          if item['state']['to'] == 'open':
-            case[item['case_id']] = {'state': 'open'}
-        if 'assignee' in item:
-          if item['team'] == 'Runtime' and case[item['case_id']]['state'] == 'open':
-            case[item['case_id']]['team'] = 'Runtime'
-            time_tracker.append(item['timestamp'])
-        print time_tracker
-        print case
-        # if 
-      # for item in json_data:
-      #   if item['case_id'] not in tracker:
-      #     case['case_id'] = item['case_id']
-      #   if tracker[ caitem['case_id']]:
-      #     if item['team'] == 'Runtime':
-      #       print "ok"
+        for item in json_data:
+            if not case.get(item['case_id']):
+                case[item['case_id']] = {}
+                case[item['case_id']]['time_tracker'] = []
+            if 'state' in item:
+                if item['state']['to'] == 'open':
+                    case[item['case_id']]['state'] = 'open'
+                if item['state']['from'] == 'open' or item['state']['to'] == 'open':
+                    if 'team' in case[item['case_id']]:
+                        if case[item['case_id']]['team'] == 'Runtime':
+                            case[item['case_id']]['time_tracker'].append(
+                                parser.parse(item['timestamp']))
+            if 'assignee' in item:
+                if item['team'] == 'Runtime' and case[item['case_id']]['state'] == 'open':
+                    case[item['case_id']]['team'] = 'Runtime'
+                    case[item['case_id']]['time_tracker'].append(
+                        parser.parse(item['timestamp']))
+            if len(case[item['case_id']]['time_tracker']) is 2:
+                hours = hours + \
+                    self.calculate(
+                        case[item['case_id']]['time_tracker'][0], case[item['case_id']]['time_tracker'][1])
+                case[item['case_id']]['time_tracker'].pop(0)
+                case[item['case_id']]['time_tracker'].pop(0)
+                case[item['case_id']]['hours'] = hours
 
-      # tracker.append(case)
-      return case
+        return case
 
-
-    def calculate(start, end):
-      """Calculates the time in hours between start and end time"""
-      pass
-
-    def get_or_create(case_id):
-      """Finds the case_id, if it doesn't exist, create it"""
-      pass
-
-
+    def calculate(self, start, end):
+        """Calculates the time in hours between start and end time"""
+        hours = end - start
+        hours = abs(hours.days) * 24 + abs(hours.seconds) // 3600
+        return hours
 
     """
     Notes:
