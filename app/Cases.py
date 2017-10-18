@@ -4,11 +4,12 @@ from datetime import datetime
 from dateutil import parser
 import json
 
+
 class Cases(Resource):
 
     def __init__(self):
-      self.case = {}
-      self.hours = 0
+        self.case = {}
+        self.hours = 0
 
     def get(self):
         pass
@@ -18,19 +19,19 @@ class Cases(Resource):
         json_data = request.get_json(force=True)
 
         for item in json_data:
-            if not self.case.get(item['case_id']):
-                self.case[item['case_id']] = {}
-                self.case[item['case_id']]['time_tracker'] = []
+            self.get_or_create(item['case_id'])
+
             if 'state' in item:
                 if item['state']['to'] == 'open':
-                    self.case[item['case_id']]['state'] = 'open'
+                    self.set_state(item['case_id'])
+                    self.check_team(item['case_id'])
                     if 'team' in self.case[item['case_id']]:
                         if self.case[item['case_id']]['team'] == 'Runtime':
                             self.case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
-                            print self.case[item['case_id']]['time_tracker']
+                            # print self.case[item['case_id']]['time_tracker']
 
-                if item['state']['from'] == 'open' or item['state']['to'] == 'open':
+                if item['state']['from'] == 'open':
                     if 'team' in self.case[item['case_id']]:
                         if self.case[item['case_id']]['team'] == 'Runtime':
                             self.case[item['case_id']]['time_tracker'].append(
@@ -38,7 +39,7 @@ class Cases(Resource):
                         if item['state']['to'] == 'closed':
                             self.case[item['case_id']]['time_tracker'].append(
                                 parser.parse(item['timestamp']))
-                            print self.case[item['case_id']]['time_tracker']
+                            # print self.case[item['case_id']]['time_tracker']
                             # print case[item['case_id']]['time_tracker']
                         # print case[item['case_id']]['team']
             if 'assignee' in item:
@@ -46,7 +47,7 @@ class Cases(Resource):
                     self.case[item['case_id']]['team'] = 'Runtime'
                     self.case[item['case_id']]['time_tracker'].append(
                         parser.parse(item['timestamp']))
-                    print self.case[item['case_id']]['time_tracker']
+                    # print self.case[item['case_id']]['time_tracker']
 
             if len(self.case[item['case_id']]['time_tracker']) == 2:
 
@@ -65,6 +66,25 @@ class Cases(Resource):
         hours = end - start
         hours = abs(hours.days) * 24 + abs(hours.seconds) // 3600
         return hours
+
+    def get_or_create(self, case_id):
+        if not self.case.get(case_id):
+            self.case[case_id] = {}
+            self.case[case_id]['time_tracker'] = []
+        else:
+            print "already created"
+
+    def set_state(self, case_id):
+        self.case[case_id]['state'] = 'open'
+
+    def check_team(self, case_id):
+        pass
+
+    def check_state(self, case_id):
+        pass
+
+    def set_team(self, case_id):
+        pass
 
     """
     Notes:
