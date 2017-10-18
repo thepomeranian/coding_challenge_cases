@@ -12,7 +12,7 @@ class Cases(Resource):
         self.hours = 0
 
     def get(self):
-        pass
+        return json.dumps(self.case)
 
     def post(self):
         """Takes in JSON and outputs all cases with number of hours"""
@@ -38,19 +38,24 @@ class Cases(Resource):
                 self.set_team(item['case_id'], item['team'])
                 if self.is_open(item['case_id']):
                     if self.previous(item['case_id']):
+                        print 'previous team works'
                         self.add_timestamp(item['case_id'], item['timestamp'])
+                        print self.case[item['case_id']]['time_tracker']
                     if self.is_Runtime(item['case_id']):
                         self.add_timestamp(item['case_id'], item['timestamp'])
 
+        # return json.dumps("case_id": self.case['case_id'],"hours":
+        # self.hours)
+        # return [{"case_id": case ,"hours": case['hours']} for case in self.case]
+          return self.case
 
-        return json.dumps(self.case)
 
     def add_timestamp(self, case_id, timestamp):
-        if self.is_Runtime(case_id):
-                print 'adding ' + timestamp
-                self.case[case_id]['time_tracker'].append(
-                    parser.parse(timestamp))
-                self.check_time_tracker(case_id)
+        if self.is_Runtime(case_id) or self.previous(case_id):
+            print 'adding ' + timestamp
+            self.case[case_id]['time_tracker'].append(
+                parser.parse(timestamp))
+            self.check_time_tracker(case_id)
 
     def check_time_tracker(self, case_id):
         print self.case[case_id]['time_tracker']
@@ -60,6 +65,8 @@ class Cases(Resource):
                                0], self.case[case_id]['time_tracker'][1])
             self.case[case_id]['time_tracker'].pop(0)
             self.case[case_id]['time_tracker'].pop(0)
+            print 'time_tracker is now ' + str(len(self.case[case_id]['time_tracker']))
+            print 'hours is now ' + str(self.hours)
             self.case[case_id]['hours'] = self.hours
 
     def calculate(self, start, end):
