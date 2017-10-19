@@ -8,18 +8,35 @@ import json
 class Cases(Resource):
 
     def __init__(self):
+        """Initialize Class
+
+        Initializes class variables: case and hours
+        """
         self.case = {}
         self.hours = 0
 
     def get(self):
+        """Cases' GET method
+
+        Doesn't do anything right now
+
+        Returns:
+          dict -- returns empty case dic
+        """
         return json.dumps(self.case)
 
     def post(self):
-        """Takes in JSON and outputs all cases with number of hours"""
+        """Cases' POST method
+
+        Accepts a JSON and returns a calculation of hours works on each case by the RUNTIME team when case is OPEN
+
+        Returns:
+          dict -- case id's and their corresponding hours
+        """
         json_data = request.get_json(force=True)
 
         for item in json_data:
-            self.get_or_create(item['case_id'])
+            self.create(item['case_id'])
 
             if 'state' in item:
                 if item['state']['to'] == 'pending':
@@ -47,6 +64,14 @@ class Cases(Resource):
         return [{"case_id": case, "hours": self.case[case]['hours']} for case in self.case]
 
     def add_timestamp(self, case_id, timestamp):
+        """Adds a timestamp into the nested case dict
+
+        Adds a timestamp to the time_tracker list if the case was worked on by RUNTIME and is OPEN
+
+        Arguments:
+          case_id {str} -- case id
+          timestamp {datetime} -- timestamp to add to time_tracker
+        """
         if self.is_Runtime(case_id) or self.previous(case_id):
             print 'adding ' + timestamp
             self.case[case_id]['time_tracker'].append(
@@ -54,45 +79,103 @@ class Cases(Resource):
             self.check_time_tracker(case_id)
 
     def check_time_tracker(self, case_id):
+        """Empties the timestamps in time_tracker and calculates the number of hours
+
+        Takes all of the timestamps in the list time_tracker and checks if there are two entries. 
+        If so, call calculate(). Set time_tracker back to an empty list. Save the calculated 
+        number of hours with the corresponding case.
+
+        Arguments:
+          case_id {str} -- case id
+        """
         print self.case[case_id]['time_tracker']
         if len(self.case[case_id]['time_tracker']) == 2:
             self.case[case_id]['hours'] = self.case[case_id]['hours'] + \
                 self.calculate(self.case[case_id]['time_tracker'][
                                0], self.case[case_id]['time_tracker'][1])
-            self.case[case_id]['time_tracker'].pop(0)
-            self.case[case_id]['time_tracker'].pop(0)
+            self.case[case_id]['time_tracker'] = []
             print 'time_tracker is now ' + str(len(self.case[case_id]['time_tracker']))
             print 'hours is now ' + str(self.case[case_id]['hours']) + ' ' + str(case_id)
             self.case[case_id]['hours'] = self.case[case_id]['hours']
 
     def calculate(self, start, end):
-        """Calculates the time in hours between start and end time"""
+        """Calculates the time in hours between start and end time
+        
+        Arguments:
+          start {datetime} -- [time that runtime team started working on an open case]
+          end {datetime} -- [time that runtime team ended working on an open case]
+        
+        Returns:
+          [int] -- [number of hours spent]
+        """
         hours = end - start
         hours = abs(hours.days) * 24 + abs(hours.seconds) // 3600
         return hours
 
-    def get_or_create(self, case_id):
+    def create(self, case_id):
+        """Creates a case for a case id 
+        
+        Checks if case id exists in case, if not, create it.
+        
+        Arguments:
+          case_id {str} -- case id
+        """
         if not self.case.get(case_id):
             self.case[case_id] = {}
             self.case[case_id]['time_tracker'] = []
             self.case[case_id]['hours'] = 0
 
     def set_state(self, case_id, state='open'):
+        """Sets the state of the case
+        
+        Sets the state of the case to the proper case
+        
+        Arguments:
+          case_id {str} -- case id
+        
+        Keyword Arguments:
+          state {str} -- the state of the case (default: {'open'})
+        """
         self.case[case_id]['state'] = state
         print 'state set to ' + self.case[case_id]['state']
 
     def is_open(self, case_id):
-      # check if state is open
+        """Check if case is open
+        
+        Arguments:
+          case_id {str} -- case id
+        
+        Returns:
+          bool -- Returns True if the case is open, otherwise, return False
+        """
         if self.case[case_id]['state'] == 'open':
             return True
+        else:
+          False
 
     def set_team(self, case_id, team=None):
+        """Set the team that is working on a case
+        
+        Arguments:
+          case_id {str} -- case id
+        
+        Keyword Arguments:
+          team {str} -- The team that is working on the case (default: {None})
+        """
         if 'team' in self.case[case_id]:
             self.case[case_id]['previous_team'] = self.case[case_id]['team']
         self.case[case_id]['team'] = team
         print 'team set to ' + self.case[case_id]['team']
 
     def is_Runtime(self, case_id):
+        """Check if RUNTIME team is working on the case
+        
+        Arguments:
+          case_id {str} -- case id
+        
+        Returns:
+          bool -- Returns True if RUNTIME team is working on the case, if not, False
+        """
         if 'team' in self.case[case_id]:
             if self.case[case_id]['team'] == 'Runtime':
                 return True
@@ -100,6 +183,14 @@ class Cases(Resource):
             return False
 
     def previous(self, case_id):
+        """Checks if the previous team working on the case was RUNTIME
+
+        Arguments:
+          case_id {str} -- case id
+        
+        Returns:
+          bool -- Returns True if RUNTIME team is working on the case, if not, False
+        """
         if 'previous_team' in self.case[case_id]:
             if self.case[case_id]['previous_team'] == 'Runtime':
                 return True
