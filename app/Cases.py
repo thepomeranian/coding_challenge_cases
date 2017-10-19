@@ -198,16 +198,10 @@ class Cases(Resource):
 
     """
     Notes:
-    * figure out how to best store start and stop times of each case 
-      * this will need some more thought -- there has to be a way to check all of the conditions: state is open, assigned to runtime in a cleaner way -- another method? is_open() is_runtime()?
-    * write calculate method to check time between start and finish 
-      * this should be easier to do since i can take it as an individual function
     * testing
       * check if post body is valid json
-      * assert calculate method works properly
+      * assert all methods works properly
       * if i end up writing methods for checking state and assignee i can test those as well
       * i could try my hand at flask testing and test the get and post endpoints
-    * write a banging readme
-    * rewrite handling case states, check for runtime, and appending to timetracker. the issues seem to stem from there. hour calculation is currently off as well
-    * might want to think about breaking this down into methods once the math checks out
+    * twilio dashboard
     """

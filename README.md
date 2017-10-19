@@ -51,6 +51,27 @@ For provided `input.json`
 curl -X POST http://localhost:8080/cases -H "Content-Type: application/json" -d @input.json
 ```
 
+### Testing
+
+**Paw**
+[Screenshots](https://imgur.com/a/xK8lT)
+
+**unittest**
+
+```shell
+python -m unittest test 
+```
+***
+If I were to write tests for these, I'd have tests that check that the API portion of it works properly.
+To test that, I'd first instantiate the app, then I'd pass a json to the '/cases' endpoint and then assert that the output is the expected. 
+
+I would also write tests to test each helper method in cases. I would use unittest and create a nested case dictionary and assert all of the various probablities:
+
+* changing from support to runtime, runtime to support
+* runtime team member to runtime team member
+* case open to pending or closed, pending to open or closed, or closed to open or pending
+
+And various combinations of those. 
 
 ### Other
 
