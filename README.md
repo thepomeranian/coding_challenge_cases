@@ -7,4 +7,5 @@ Cases.py -
 __init__.py - instantiates flask and flask-restful api wrapper
 config.py - directory and debug settings for the app
 view.py - endpoint mapping for the api
+Cases.py - endpoint logic is located here
 
